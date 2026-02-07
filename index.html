@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💞 Special Quiz for My Valentine 💞</title>
+  <style>
+    :root{
+      --bg1:#ffe0ef;
+      --bg2:#ffd0e6;
+      --card:#ffffffcc;
+      --txt:#4a1630;
+      --muted:#7a3a55;
+      --shadow: 0 18px 45px rgba(255, 77, 141, .22);
+    }
+    *{ box-sizing:border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      color:var(--txt);
+      background:
+        radial-gradient(900px 500px at 20% 15%, #fff, transparent 55%),
+        radial-gradient(800px 520px at 80% 20%, #fff, transparent 55%),
+        radial-gradient(1200px 700px at 50% 95%, #fff, transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+
+    /* floating hearts */
+    .heart{
+      position:absolute;
+      opacity:.14;
+      animation: floatUp linear infinite;
+      user-select:none;
+      pointer-events:none;
+    }
+    @keyframes floatUp{
+      0%{ transform: translateY(40px) translateX(0) rotate(0deg); opacity:0; }
+      10%{ opacity:.14; }
+      100%{ transform: translateY(-120vh) translateX(40px) rotate(18deg); opacity:0; }
+    }
+
+    .panel{
+      width:min(760px, 92vw);
+      background: linear-gradient(180deg, var(--card), rgba(255,255,255,.70));
+      border: 2px solid rgba(255, 122, 182, .55);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      padding: 18px 18px 16px;
+      position:relative;
+      transform: translateZ(0); /* smoother animations */
+    }
+
+    /* Animations: rom-com shake + happy bounce */
+    @keyframes shake250{
+      0%{ transform: translateX(0); }
+      20%{ transform: translateX(-10px); }
+      40%{ transform: translateX(10px); }
+      60%{ transform: translateX(-8px); }
+      80%{ transform: translateX(8px); }
+      100%{ transform: translateX(0); }
+    }
+    @keyframes bounceTiny{
+      0%{ transform: translateY(0); }
+      35%{ transform: translateY(-4px); }
+      70%{ transform: translateY(0); }
+      100%{ transform: translateY(0); }
+    }
+    .panel.shake{ animation: shake250 250ms ease-in-out; }
+    .panel.bounce{ animation: bounceTiny 240ms ease-out; }
+
+    .titleRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    h1{ margin:0; font-size: 18px; letter-spacing:.2px; }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 122, 182, .55);
+      background: rgba(255, 255, 255, .65);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
+    .qText{ font-size: 18px; margin: 6px 0 8px; line-height:1.25; }
+    .hint{ font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+
+    .grid{
+      position: relative;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    @media (max-width: 520px){ .grid{ grid-template-columns: 1fr; } }
+
+    button.opt{
+      border-radius: 16px;
+      padding: 12px 12px;
+      border: 1.5px solid rgba(255, 122, 182, .38);
+      background: rgba(255, 255, 255, .86);
+      cursor:pointer;
+      color:var(--txt);
+      text-align:left;
+      transition: transform .08s ease, box-shadow .15s ease, border-color .2s ease;
+      font-size: 15px;
+    }
+    button.opt:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255, 122, 182, .65);
+      box-shadow: 0 10px 20px rgba(255, 77, 141, .12);
+    }
+    button.opt:disabled{
+      cursor:not-allowed;
+      opacity:.75;
+      transform:none;
+      box-shadow:none;
+    }
+
+    /* 5th option centered (spans both columns) */
+    .centerFifth{
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: min(360px, 100%);
+      text-align: center;
+    }
+
+    /* ✅ UPDATED: show entire photo (no cropping) */
+    .photo{
+      width: 100%;
+      max-height: 320px;          /* more breathing room */
+      object-fit: contain;        /* NO CROPPING */
+      border-radius: 18px;
+      border: 1.5px solid rgba(255, 122, 182, .35);
+      margin-top: 10px;
+      display:none;
+      background: rgba(255,255,255,.75);
+    }
+
+    /* BIG overlay reaction across options */
+    .overlay{
+      position:absolute;
+      inset: -6px;
+      border-radius: 18px;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding: 16px 14px;
+      z-index: 10;
+      border: 1px solid rgba(255,255,255,.85);
+      box-shadow: 0 18px 42px rgba(0,0,0,.10);
+      backdrop-filter: blur(10px);
+      animation: popIn .16s ease-out;
+      color: #2a0b1b;
+      text-shadow: 0 1px 0 rgba(255,255,255,.35);
+    }
+    @keyframes popIn{
+      from{ transform: translateY(10px) scale(.98); opacity:0; }
+      to  { transform: translateY(0) scale(1); opacity:1; }
+    }
+    .overlay.show{ display:flex; }
+    .overlay.soft { font-size: 15px; }
+    .overlay.med  { font-size: 18px; font-weight: 650; }
+    .overlay.big  { font-size: 22px; font-weight: 800; }
+
+    /* Lighter, readable backgrounds */
+    .overlay.correct{
+      background: linear-gradient(180deg, rgba(46,204,113,.30), rgba(255,255,255,.80));
+    }
+    .overlay.wrong{
+      background: linear-gradient(180deg, rgba(255,77,141,.40), rgba(255,255,255,.82));
+    }
+    .overlay.spicy{
+      background: linear-gradient(180deg, rgba(255,179,0,.28), rgba(255,255,255,.82));
+    }
+
+    .footer{
+      margin-top: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Final question */
+    .playground{
+      margin-top: 10px;
+      border-radius: 18px;
+      border: 1.5px dashed rgba(255, 122, 182, .55);
+      background: rgba(255,255,255,.55);
+      position: relative;
+      height: 160px;
+      overflow:hidden;
+      display:none;
+    }
+    .finalRow{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 16px;
+      padding: 12px;
+    }
+    .bigBtn{
+      font-size: 18px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255, 122, 182, .55);
+      background: rgba(255, 255, 255, .90);
+      cursor:pointer;
+      color: var(--txt);
+      transition: transform .08s ease, background .2s ease;
+      user-select:none;
+    }
+    .bigBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.98); }
+    .yes{ border-color: rgba(46,204,113,.35); }
+    .no{ border-color: rgba(255,77,141,.60); position: relative; }
+
+    /* Final success screen */
+    .finalScreen{
+      text-align:center;
+      padding: 20px 10px;
+    }
+    .finalScreen h2{
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+    .finalScreen p{
+      margin: 0;
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+  </style>
+</head>
+<body>
+  <div id="hearts"></div>
+
+  <div class="panel" id="panel">
+    <div class="titleRow">
+      <h1>💞 Special Quiz for My Valentine 💞</h1>
+      <div class="pill" id="progress">Question 1 of 7</div>
+    </div>
+
+    <div class="qText" id="qText"></div>
+    <div class="hint" id="qHint"></div>
+
+    <img class="photo" id="qPhoto" alt="Memory photo" />
+
+    <div class="grid" id="grid">
+      <div class="overlay" id="overlay"></div>
+    </div>
+
+    <div class="playground" id="playground">
+      <div class="finalRow">
+        <button class="bigBtn yes" id="yesBtn">Yes 💘</button>
+        <button class="bigBtn no" id="noBtn">No 😏</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Score: <strong id="score">0</strong></div>
+      <div>💗</div>
+    </div>
+  </div>
+
+<script>
+  /* Hearts */
+  const heartsWrap = document.getElementById("hearts");
+  (function spawnHearts(){
+    const heartChars = ["💗","💖","💘","💞","💕"];
+    const count = 16;
+    for(let i=0;i<count;i++){
+      const s = document.createElement("div");
+      s.className = "heart";
+      s.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
+      s.style.left = (Math.random()*100) + "vw";
+      s.style.fontSize = (22 + Math.random()*30) + "px";
+      const dur = 10 + Math.random()*10;
+      s.style.animationDuration = dur + "s";
+      s.style.animationDelay = (Math.random()*-dur) + "s";
+      s.style.top = (60 + Math.random()*60) + "vh";
+      heartsWrap.appendChild(s);
+    }
+  })();
+
+  /* Elements */
+  const panel = document.getElementById("panel");
+  const qText = document.getElementById("qText");
+  const qHint = document.getElementById("qHint");
+  const grid = document.getElementById("grid");
+  const progress = document.getElementById("progress");
+  const scoreEl = document.getElementById("score");
+  const qPhoto = document.getElementById("qPhoto");
+  const playground = document.getElementById("playground");
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn = document.getElementById("noBtn");
+
+  let idx = 0;
+  let score = 0;
+  let locked = false;
+
+  // Overlay stays longer
+  const OVERLAY_MS = 3500;
+
+  function retriggerAnim(cls){
+    panel.classList.remove(cls);
+    void panel.offsetWidth; // force reflow
+    panel.classList.add(cls);
+    setTimeout(() => panel.classList.remove(cls), 260);
+  }
+
+  function showOverlay(text, tone="spicy", size="med"){
+    const ov = document.getElementById("overlay");
+    ov.className = `overlay show ${tone} ${size}`;
+    ov.textContent = text;
+    setTimeout(() => {
+      ov.className = "overlay";
+      ov.textContent = "";
+    }, OVERLAY_MS);
+  }
+
+  /* ✅ UPDATED: options reordered so correct is NOT always option B */
+  const quiz = [
+    {
+      type: "mcq",
+      text: "When did we first step into each other’s life (the first chat that started the chaos)?",
+      hint: "This is the beginning of our story. 😌",
+      options: [
+        { label: "5th Dec", correct:false, tone:"wrong",   size:"big",
+          reaction:"No. 😤 Absolutely not. Our love story didn’t begin on this date—try again in your next life. 💔" },
+        { label: "29th Jan", correct:false, tone:"wrong",   size:"big",
+          reaction:"Incorrect. 😤 I’m giving you the *serious stare* right now. Our origin deserves respect. 👀💔" },
+        { label: "28th Nov", correct:true,  tone:"correct", size:"big",
+          reaction:"YES. 💘 The universe said ‘plot twist’ and here we are." },
+        { label: "5th Feb",  correct:false, tone:"wrong",   size:"big",
+          reaction:"Wrong. 😠 Babe?? That’s not even close. My dramatic soul is offended. 💅💔" },
+        { label: "I don’t remember", correct:false, tone:"spicy", size:"big",
+          reaction:"EXCUSE ME?? 😡😭 ‘I don’t remember’?! My heart just resigned. Immediate apology required. 💔📜" }
+      ]
+    },
+    {
+      type: "mcq",
+      text: "What was I wearing when we first met?",
+      hint: "This is a ‘how can you forget’ kind of memory. 😏",
+      options: [
+        { label:"Pink and blue suit", correct:false, tone:"wrong", size:"big",
+          reaction:"Wrong. 😤 Sir. That outfit was ICONIC and you just… erased it?? I’m hurt. 💔" },
+        { label:"Pink sweater and black jeans", correct:false, tone:"wrong", size:"big",
+          reaction:"NOOO 😭😭😭 Tears = rivers. I’m actively crying. Two waterfalls. Continuous flow. 💔💦" },
+        { label:"Pink sweater and ripped jeans", correct:true, tone:"correct", size:"big",
+          reaction:"Correct. 💞 Our first meeting looked like a rom-com scene." },
+        { label:"Pink suit", correct:false, tone:"wrong", size:"big",
+          reaction:"Nope. 😠 This is not a fashion quiz for strangers—this is *us*. Focus. 💔" }
+      ]
+    },
+    {
+      type: "mcq",
+      text: "Which is our favourite ice-cream? 😉",
+      hint: "This answer is… slightly mischievous. 😏",
+      options: [
+        { label:"Chocolate (especially on you) 😏", correct:true, tone:"correct", size:"big",
+          reaction:"Correct. 😏💘 That’s the spicy romance flavour." },
+        { label:"Mango", correct:false, tone:"wrong", size:"big",
+          reaction:"Wrong. 😤 Mango?? Babe no. This is the *romance* section—try again (in your heart). 💔" },
+        { label:"Chocobar", correct:false, tone:"wrong", size:"big",
+          reaction:"Nope. 😤 You were in the right neighbourhood but entered the wrong house. 💔🚪" },
+        { label:"Strawberry", correct:false, tone:"wrong", size:"big",
+          reaction:"Incorrect. 😠 Cute… but not our kind of cheeky. Don’t play with my feelings. 💔" }
+      ]
+    },
+    {
+      type: "mcq-any",
+      text: "Tell me where do you want to travel next?",
+      hint: "Pick one, and we’ll make it happen. 💞",
+      options: [
+        { label:"Kazakhstan (Almaty)", correct:true, tone:"correct", size:"big",
+          reaction:"Almaty, here we come! 🏔️💘 Mountains + us = perfect." },
+        { label:"Azerbaijan (Baku)", correct:true, tone:"correct", size:"big",
+          reaction:"Baku vibes! 🌊✨ Cute city strolls + dramatic sunsets." },
+        { label:"Georgia (Tbilisi)", correct:true, tone:"correct", size:"big",
+          reaction:"Tbilisi + wine + us? 😏🍷 Consider it a love itinerary." },
+        { label:"Turkey (Istanbul + Cappadocia)", correct:true, tone:"correct", size:"big",
+          reaction:"Cappadocia balloons?! 🎈💞 Main-character couple energy unlocked." }
+      ]
+    },
+    {
+      type: "mcq-photo",
+      text: "Where was this photo clicked? 📸",
+      hint: "This one is pure us. 😌",
+      photoSrc: "assets/our-photo.jpg",
+      options: [
+        { label:"Mumbai", correct:false, tone:"wrong", size:"big",
+          reaction:"No. 😠 Mumbai is dramatic but THIS answer is just wrong. My heart is judging you. 💔😤" },
+        { label:"Pune", correct:true, tone:"correct", size:"big",
+          reaction:"YES. 💖 Pune — where the memory looks extra adorable." },
+        { label:"Indore", correct:false, tone:"wrong", size:"big",
+          reaction:"Wrong. 😠 I’m not mad… okay I’m a LITTLE mad. That photo deserves better. 💔📸" },
+        { label:"Bangalore", correct:false, tone:"wrong", size:"big",
+          reaction:"Incorrect. 😤 Bangalore is love, but this memory is from somewhere else. Concentrate, my Valentine. 💔" }
+      ]
+    },
+    {
+      type: "mcq",
+      text: "From where do you remember the song ‘La Vie en Rose’?",
+      hint: "Pick the one that feels like us. 🎶💞",
+      options: [
+        { label:"A drive", correct:false, tone:"wrong", size:"big",
+          reaction:"Wrong. 😤 Don’t rewrite our love-lore. This song belongs to a very specific memory. 💔🎶" },
+        { label:"Valentine’s Day dance", correct:false, tone:"wrong", size:"big",
+          reaction:"Incorrect. 😤 Not yet, at least. But now you’ve promised me one. 💔💃" },
+        { label:"Music box", correct:true, tone:"correct", size:"big",
+          reaction:"Correct. 💘 A tiny music box, and suddenly the world went soft." },
+        { label:"On F.R.I.E.N.D.S.", correct:false, tone:"wrong", size:"big",
+          reaction:"Nope. 😠 Cute guess, but absolutely incorrect. I’m filing an emotional complaint. 💔📄" }
+      ]
+    },
+    {
+      type: "final",
+      text: "Will you be my Valentine? 💘",
+      hint: "Choose wisely. I’m watching… lovingly. 😏"
+    }
+  ];
+
+  function setProgress(){
+    progress.textContent = `Question ${idx+1} of ${quiz.length}`;
+  }
+
+  function render(){
+    locked = false;
+    setProgress();
+
+    const q = quiz[idx];
+    qText.textContent = q.text;
+    qHint.textContent = q.hint || "";
+
+    // reset grid + overlay
+    grid.innerHTML = '<div class="overlay" id="overlay"></div>';
+
+    qPhoto.style.display = "none";
+    playground.style.display = "none";
+
+    if(q.type === "mcq-photo"){
+      qPhoto.src = q.photoSrc;
+      qPhoto.style.display = "block";
+    }
+
+    if(q.type === "final"){
+      playground.style.display = "block";
+      noBtn.style.transform = "translate(0,0)";
+      return;
+    }
+
+    q.options.forEach((opt, i) => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = opt.label;
+
+      // If there are 5 options, center the 5th one
+      if(q.options.length === 5 && i === 4){
+        b.classList.add("centerFifth");
+      }
+
+      b.addEventListener("click", () => handlePick(opt));
+      grid.appendChild(b);
+    });
+  }
+
+  function handlePick(opt){
+    if(locked) return;
+    locked = true;
+
+    // Score
+    if(opt.correct) score += 1;
+    scoreEl.textContent = String(score);
+
+    // Animate panel: shake for wrong/spicy, bounce for correct
+    if(opt.tone === "correct"){
+      retriggerAnim("bounce");
+    } else {
+      retriggerAnim("shake");
+    }
+
+    // Show overlay
+    showOverlay(opt.reaction, opt.tone, opt.size);
+
+    // Disable buttons immediately (no retries)
+    [...grid.querySelectorAll("button.opt")].forEach(b => b.disabled = true);
+
+    // Advance after overlay duration
+    setTimeout(() => {
+      idx = Math.min(quiz.length - 1, idx + 1);
+      render();
+    }, OVERLAY_MS);
+  }
+
+  /* Final question */
+  yesBtn.addEventListener("click", () => {
+    score += 100;
+    scoreEl.textContent = String(score);
+
+    panel.innerHTML = `
+      <div class="finalScreen">
+        <h2>Yay. 💞 Now you’re stuck with me (happily). 😏</h2>
+        <p>
+          You just made my heart go <strong>boom boom</strong> 💘<br/>
+          Now come here… your Valentine is waiting. 😏💕
+        </p>
+      </div>
+    `;
+
+    panel.animate(
+      [{transform:"translateY(0)"},{transform:"translateY(-6px)"},{transform:"translateY(0)"}],
+      {duration:380}
+    );
+  });
+
+  function moveNo(){
+    const rect = playground.getBoundingClientRect();
+    const btn = noBtn.getBoundingClientRect();
+    const pad = 14;
+
+    const maxX = rect.width - btn.width - pad;
+    const maxY = rect.height - btn.height - pad;
+
+    const x = pad + Math.random() * Math.max(1, maxX);
+    const y = pad + Math.random() * Math.max(1, maxY);
+
+    const base = { x: rect.width/2 + 70, y: rect.height/2 };
+    const dx = x - base.x;
+    const dy = y - base.y;
+
+    noBtn.style.transform = `translate(${dx}px, ${dy}px)`;
+  }
+
+  function dist(a,b){
+    const dx = a.x-b.x, dy=a.y-b.y;
+    return Math.sqrt(dx*dx+dy*dy);
+  }
+
+  playground.addEventListener("mousemove", (e) => {
+    const q = quiz[idx];
+    if(q.type !== "final") return;
+
+    const rect = playground.getBoundingClientRect();
+    const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+    const b = noBtn.getBoundingClientRect();
+    const noCenter = { x: (b.left - rect.left) + b.width/2, y: (b.top - rect.top) + b.height/2 };
+
+    if(dist(mouse, noCenter) < 90){
+      moveNo();
+    }
+  });
+
+  noBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    moveNo();
+  });
+
+  render();
+</script>
+</body>
+</html>
